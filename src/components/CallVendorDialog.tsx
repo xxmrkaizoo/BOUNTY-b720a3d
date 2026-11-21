@@ -169,7 +169,7 @@ export default function CallVendorDialog({ ticket, open, onClose }: Props) {
             </button>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <button className="btn-accent py-3" disabled={busy || !vendor?.phone} onClick={() => contact('phone')}>
               <Phone /> {t('Call')}
             </button>

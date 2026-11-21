@@ -186,7 +186,7 @@ export default function TicketDetail() {
 
       {error && <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200">{error}</p>}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <section className="card p-6">
             <h2 className="mb-3 text-sm font-bold tracking-wide text-slate-400 uppercase">{t('Problem description')}</h2>

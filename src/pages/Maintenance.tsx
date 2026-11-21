@@ -121,7 +121,7 @@ export default function Maintenance() {
             <div className="font-semibold text-slate-800">{t('No planned maintenance yet')}</div>
             <p className="text-sm text-slate-500">{t('Start from a common one:')}</p>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {TEMPLATES.map((tp) => (
               <button
                 key={tp.title}
@@ -136,7 +136,7 @@ export default function Maintenance() {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {schedules.map((s) => {
           const due = s.nextDue ? s.nextDue.getTime() - now : 0
           return (
@@ -152,7 +152,7 @@ export default function Maintenance() {
                 <PriorityBadge priority={s.priority} />
               </div>
               {s.description && <p className="text-sm text-slate-600">{s.description}</p>}
-              <div className="grid gap-2 rounded-2xl bg-white/50 p-3 text-xs ring-1 ring-white sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-2 rounded-2xl bg-white/50 p-3 text-xs ring-1 ring-white sm:grid-cols-2">
                 <div className="flex items-center gap-2">
                   <CalendarClock className="size-4 text-slate-400" />
                   <span>
@@ -216,7 +216,7 @@ export default function Maintenance() {
               <label className="label" htmlFor="s-desc">{t('Details')}</label>
               <textarea id="s-desc" className="input" rows={2} value={editing.form.description} onChange={(e) => set({ description: e.target.value })} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="s-lab">{t('Lab')}</label>
                 <input id="s-lab" className="input" required list="s-labs" value={editing.form.lab} onChange={(e) => set({ lab: e.target.value })} />
@@ -238,7 +238,7 @@ export default function Maintenance() {
                 </select>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <span className="label">{t('Repeat every')}</span>
                 <div className="flex gap-2">

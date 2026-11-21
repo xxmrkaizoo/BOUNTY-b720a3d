@@ -15,11 +15,11 @@ import type { Computer, Ticket } from '../types.ts'
 
 function Tile({ icon: Icon, label, value, tone = 'bg-brand-100/80 text-brand-600' }: { icon: LucideIcon; label: string; value: string; tone?: string }) {
   return (
-    <div className="card flex items-center gap-3 p-4">
-      <span className={`grid size-10 shrink-0 place-items-center rounded-xl ${tone}`}><Icon className="size-5" /></span>
+    <div className="card flex flex-col items-start gap-2 p-4 sm:flex-row sm:items-center sm:gap-3">
+      <span className={`grid size-9 shrink-0 place-items-center rounded-xl sm:size-10 ${tone}`}><Icon className="size-5" /></span>
       <div className="min-w-0">
         <div className="text-xl font-extrabold tracking-tight text-ink-900 tabular-nums">{value}</div>
-        <div className="truncate text-xs text-slate-500">{label}</div>
+        <div className="text-xs text-slate-500 sm:truncate">{label}</div>
       </div>
     </div>
   )

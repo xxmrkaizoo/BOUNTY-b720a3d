@@ -113,7 +113,7 @@ export default function Login() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
+    <div className="grid grid-cols-1 min-h-screen lg:grid-cols-[1.05fr_1fr]">
       <WaterBackground />
       <SettingsButton />
       {/* Brand panel */}

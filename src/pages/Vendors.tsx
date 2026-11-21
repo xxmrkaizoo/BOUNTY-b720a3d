@@ -98,7 +98,7 @@ function Scorecard({ score }: { score: CompanyScore | undefined }) {
           </span>
         )}
       </div>
-      <dl className="mt-2 grid grid-cols-3 gap-x-3 gap-y-2 sm:grid-cols-5">
+      <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 min-[400px]:grid-cols-3 sm:grid-cols-5">
         {cells.map(([k, v]) => (
           <div key={k} className="min-w-0">
             <dt className="truncate text-[11px] text-slate-500">{k}</dt>
@@ -164,7 +164,7 @@ export default function Vendors() {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {vendors.map((v) => (
           <div key={v.id} className="card flex flex-col gap-4 p-5 transition hover:shadow-lift">
             <div className="flex items-start justify-between gap-2">
@@ -221,7 +221,7 @@ export default function Vendors() {
               <label className="label" htmlFor="vcp">{tr('Contact person')}</label>
               <input id="vcp" className="input" value={editing.form.contactPerson} onChange={(e) => set({ contactPerson: e.target.value })} />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="vphone">{tr('Phone')}</label>
                 <input id="vphone" className="input" type="tel" placeholder="+60 12-345 6789" value={editing.form.phone} onChange={(e) => set({ phone: e.target.value })} />

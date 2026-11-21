@@ -68,7 +68,7 @@ export default function Settings() {
       <section className="card p-6 sm:p-8">
         <h2 className="flex items-center gap-2 font-bold text-slate-900"><Timer className="size-5 text-brand-600" /> {t('Fix deadlines')}</h2>
         <p className="mt-1 text-sm text-slate-500">{t('Every ticket must be fixed within this time from when it was reported. Late tickets are flagged in red.')}</p>
-        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+        <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
           {(['critical', 'high', 'medium', 'low'] as Priority[]).map((p) => (
             <li key={p} className="flex items-center justify-between rounded-2xl bg-white/60 px-4 py-3 ring-1 ring-white">
               <PriorityBadge priority={p} />

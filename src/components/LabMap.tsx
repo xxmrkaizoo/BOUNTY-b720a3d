@@ -43,7 +43,7 @@ export default function LabMap({ lab, computers, openTicketOf }: { lab: string; 
       aria-label={`${c.assetTag}, ${t(COMPUTER_STATUS_LABEL[c.status])}`}
       className={`flex aspect-[4/3] min-w-0 flex-col items-center justify-center rounded-xl text-[11px] font-bold shadow-md transition hover:scale-105 ${SEAT_TONE[c.status]}`}
     >
-      <Monitor className="size-4 opacity-90" />
+      <Monitor className="size-3.5 opacity-90 sm:size-4" />
       <span className="mt-0.5 leading-none">{shortTag(c.assetTag)}</span>
     </button>
   )
@@ -65,7 +65,7 @@ export default function LabMap({ lab, computers, openTicketOf }: { lab: string; 
             <div className="mx-auto mb-4 w-full max-w-md rounded-lg bg-ink-900 py-1.5 text-center text-[11px] font-semibold tracking-widest text-on uppercase">
               {t('Front of the lab')}
             </div>
-            <div className="grid justify-center gap-2" style={{ gridTemplateColumns: `2rem repeat(${cols}, minmax(3.25rem, 5.5rem))` }}>
+            <div className="grid justify-center gap-1.5 sm:gap-2" style={{ gridTemplateColumns: `1.5rem repeat(${cols}, minmax(2.4rem, 5.5rem))` }}>
               {Array.from({ length: rows }, (_, r) => (
                 <div key={r} className="contents">
                   <span className="grid place-items-center text-[11px] font-semibold text-slate-400">{t('R{n}', { n: r + 1 })}</span>
@@ -85,7 +85,7 @@ export default function LabMap({ lab, computers, openTicketOf }: { lab: string; 
           <p className="mb-2 text-xs text-slate-500">
             {t('No seat set. Edit the PC and set its location like “Row 2, seat 5” to place it on the map.')}
           </p>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(3.25rem,5.5rem))] gap-2">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(2.4rem,5.5rem))] gap-1.5 sm:gap-2">
             {unplaced.map((c) => <Seat key={c.id} c={c} />)}
           </div>
         </div>

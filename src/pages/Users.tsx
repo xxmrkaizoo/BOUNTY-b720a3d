@@ -83,8 +83,8 @@ export default function Users() {
       {msg && <p className="glass rounded-2xl p-3 text-sm text-slate-700">{msg}</p>}
 
       <div className="card overflow-x-auto">
-        <table className="w-full min-w-[620px] text-sm">
-          <thead className="bg-white/40 text-left text-xs tracking-wide text-slate-500 uppercase">
+        <table className="block w-full text-sm sm:table sm:min-w-[620px]">
+          <thead className="hidden bg-white/40 text-left sm:table-header-group text-xs tracking-wide text-slate-500 uppercase">
             <tr>
               <th className="px-4 py-2.5 font-medium">{t('Name')}</th>
               <th className="px-4 py-2.5 font-medium">{t('Email')}</th>
@@ -92,15 +92,15 @@ export default function Users() {
               <th className="px-4 py-2.5" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-brand-900/[0.06]">
+          <tbody className="block divide-y divide-brand-900/[0.06] sm:table-row-group">
             {loading && (
-              <tr><td colSpan={4}><Loader /></td></tr>
+              <tr className="block sm:table-row"><td colSpan={4} className="block sm:table-cell"><Loader /></td></tr>
             )}
             {users.map((u) => {
               const self = u.id === user?.uid
               return (
-                <tr key={u.id}>
-                  <td className="px-4 py-3">
+                <tr key={u.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:table-row sm:p-0">
+                  <td className="block w-full sm:table-cell sm:w-auto sm:px-4 sm:py-3">
                     <div className="flex items-center gap-3">
                       <Avatar name={u.name} />
                       <span>
@@ -111,8 +111,8 @@ export default function Users() {
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-2.5 text-slate-600">{u.email}</td>
-                  <td className="px-4 py-2.5">
+                  <td className="block w-full pl-12 text-xs break-all text-slate-600 sm:table-cell sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm">{u.email}</td>
+                  <td className="block pl-12 sm:table-cell sm:px-4 sm:py-2.5">
                     <select
                       className="input w-auto py-1"
                       value={u.role}
@@ -131,7 +131,7 @@ export default function Users() {
                       <option value="disabled">{t('No access')}</option>
                     </select>
                   </td>
-                  <td className="px-4 py-2.5 text-right">
+                  <td className="ml-auto block text-right sm:table-cell sm:px-4 sm:py-2.5">
                     {!self && (
                       <button
                         className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600"
