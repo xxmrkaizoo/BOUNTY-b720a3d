@@ -6,12 +6,25 @@ export function ticketCode(id: string): string {
   return `LF-${id.slice(0, 6).toUpperCase()}`
 }
 
-export function formatDateTime(d: Date | null | undefined): string {
+/**
+ * Firestore Timestamps nested inside a field (e.g. `rating.at`) are not
+ * converted by fromDoc, so accept them here too.
+ */
+type DateLike = Date | { toDate: () => Date } | null | undefined
+function asDate(d: DateLike): Date | null {
+  if (!d) return null
+  if (d instanceof Date) return d
+  return typeof d.toDate === 'function' ? d.toDate() : null
+}
+
+export function formatDateTime(input: DateLike): string {
+  const d = asDate(input)
   if (!d) return '—'
   return d.toLocaleString(getLocale(), { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-export function timeAgo(d: Date | null | undefined): string {
+export function timeAgo(input: DateLike): string {
+  const d = asDate(input)
   if (!d) return t('just now')
   const s = Math.round((Date.now() - d.getTime()) / 1000)
   if (s < 60) return t('just now')

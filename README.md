@@ -1,208 +1,315 @@
-# LabFix: Computer Lab Maintenance System
+<div align="center">
 
-Report broken lab computers, track repairs, and contact the maintenance company in one click.
+<img src="public/icon-192.png" width="88" alt="LabFix logo" />
 
-**Stack:** React 19 · TypeScript · Tailwind CSS v4 · Firebase (Auth + Firestore) · Vite
+# LabFix – Computer Lab Maintenance System
+
+**Report broken lab computers in seconds, track every repair live, and bring the maintenance company in with one tap.**
+
+[![Live demo](https://img.shields.io/badge/Live-labfix--a16fa.web.app-1d5fed?style=for-the-badge)](https://labfix-a16fa.web.app)
+
+![React](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?logo=tailwindcss&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Auth_·_Firestore_·_Hosting-ffca28?logo=firebase&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-8-646cff?logo=vite&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8)
+
+<img src="docs/screenshots/02-dashboard.png" alt="LabFix dashboard" width="900" />
+
+</div>
+
+---
+
+## Contents
+
+- [What it does](#what-it-does)
+- [System flowchart](#system-flowchart)
+- [Screenshots](#screenshots)
+- [Features](#features)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Deploying](#deploying)
+- [Project structure](#project-structure)
+- [Data model](#data-model)
+- [Security](#security)
+- [Free-plan notes](#free-plan-notes)
+
+## What it does
+
+LabFix connects three groups of people around one broken computer:
+
+| Who | What they do in LabFix |
+|---|---|
+| 👩‍🏫 **Lab staff** | Scan the QR sticker on a PC (or pick it from a list), describe the fault, add a photo, chat about the repair and rate it when it's fixed. |
+| 🛠️ **Lab admin** | Sees every fault live, calls the maintenance company (phone, WhatsApp or email with everything filled in), tracks deadlines, plans routine maintenance, manages PCs, companies and users, and runs reports. |
+| 👷 **Technician** | Joins through the company's invite link, sees **only their company's jobs**, chats with the lab, uploads photos and marks jobs fixed with parts and cost. |
+
+## System flowchart
+
+The complete repair journey, from a broken PC to the monthly report:
+
+```mermaid
+flowchart TD
+    START(["💥 A lab PC breaks"]) --> HOW{How is it reported?}
+    HOW -- "Scan QR sticker" --> QR["Report form opens<br/>with the PC already chosen"]
+    HOW -- "Open LabFix" --> PICK["Report Fault → choose lab and PC"]
+    QR --> SIGNED{Signed in?}
+    SIGNED -- No --> LOGIN["Sign in / sign up<br/>email or Google"] --> FORM
+    SIGNED -- Yes --> FORM
+    PICK --> FORM["Problem type · priority · details · photos"]
+    FORM --> TK["Ticket = Open · PC = Faulty<br/>fix deadline starts"]
+    TK --> AL1["🔔 Admins alerted"]
+    AL1 --> CALL["📞 Admin calls the company<br/>phone · WhatsApp · email + portal link"]
+    CALL --> VC["Ticket = Vendor Called<br/>🔔 company + reporter"]
+    VC --> TECH{"Technician has<br/>an account?"}
+    TECH -- No --> JOIN["Signs up with the invite link<br/>registered under that company"] --> PORTAL
+    TECH -- Yes --> PORTAL["Maintenance portal<br/>only their company's jobs"]
+    PORTAL --> WORK["Start repair → In Progress<br/>💬 chat · 📷 photos"]
+    WORK --> FIX["Mark as fixed<br/>parts replaced · cost"]
+    FIX --> RES["Ticket = Resolved · PC = Working<br/>🔔 reporter + admins"]
+    RES --> OK{"Works for the lab?"}
+    OK -- No --> REOPEN["Reopen · count +1"] --> TK
+    OK -- Yes --> RATE["Reporter rates ⭐ 1–5"] --> CLOSE["Admin closes"]
+    CLOSE --> STATS[("Reports · scorecards ·<br/>PC history · monthly PDF / Excel")]
+```
+
+<details>
+<summary><b>System architecture</b></summary>
+
+```mermaid
+flowchart LR
+    subgraph People
+        S["👩‍🏫 Lab staff"]
+        A["🛠️ Lab admin"]
+        T["👷 Technician"]
+    end
+    subgraph Device["Browser / installed app"]
+        UI["React 19 + TypeScript<br/>Tailwind CSS v4"]
+        SW["Service worker<br/>offline + pop-ups"]
+    end
+    subgraph Firebase["Firebase (free Spark plan)"]
+        H["Hosting"]
+        AU["Authentication<br/>email · Google"]
+        FS[("Cloud Firestore<br/>live data + security rules")]
+    end
+    Q["🏷️ QR sticker"] -- "scan" --> UI
+    S & A & T --> UI
+    H -- "serves app" --> UI
+    UI <--> AU
+    UI <-- "real-time" --> FS
+    UI --- SW
+    UI -- "call / message" --> EXT["📞 Phone · 💬 WhatsApp · ✉️ Email"]
+```
+
+</details>
+
+<details>
+<summary><b>Ticket status lifecycle</b></summary>
+
+```mermaid
+stateDiagram-v2
+    state "Vendor Called" as VendorCalled
+    state "In Progress" as InProgress
+    [*] --> Open: Fault reported
+    Open --> VendorCalled: Admin calls the company
+    VendorCalled --> InProgress: Technician starts repair
+    InProgress --> Resolved: Marked as fixed
+    VendorCalled --> Resolved: Marked as fixed
+    Open --> Resolved: Admin
+    Resolved --> Closed: Admin closes
+    Resolved --> Open: Reopened
+    Closed --> Open: Reopened
+    Closed --> [*]
+```
+
+| Ticket | PC | Fix deadline (from report) |
+|---|---|---|
+| Open / Vendor Called | Faulty | Critical **4 h** |
+| In Progress | Under Repair | High **24 h** |
+| Resolved / Closed | Working | Medium **3 days** · Low **7 days** |
+
+</details>
+
+📄 **All diagrams** (roles and access, company onboarding, alerts, planned maintenance, reports, data model) are in **[docs/FLOWCHART.md](docs/FLOWCHART.md)**.
+
+## Screenshots
+
+> Taken with the built-in demo data. Every name, company and number is made up.
+
+<table>
+<tr>
+<td width="50%"><b>Sign in</b> – email or Google, forgot password<br/><img src="docs/screenshots/01-login.png" alt="Sign-in page" /></td>
+<td width="50%"><b>Dashboard</b> – live tickets, overdue banner, fix-deadline badges<br/><img src="docs/screenshots/02-dashboard.png" alt="Dashboard" /></td>
+</tr>
+<tr>
+<td><b>Report by QR code</b> (phone) – PC filled in, duplicate warning, photo<br/><img src="docs/screenshots/03-report-qr-mobile.png" alt="Report form on a phone after scanning a QR sticker" width="300" /></td>
+<td><b>Ticket</b> – progress, photos, chat, parts and cost, rating, history<br/><img src="docs/screenshots/04-ticket-detail.png" alt="Ticket details with chat and rating" /></td>
+</tr>
+<tr>
+<td><b>Call the maintenance company</b> – message and portal link written for you<br/><img src="docs/screenshots/05-call-company.png" alt="Call maintenance company dialog" /></td>
+<td><b>Live alerts</b> – bell, unread count, pop-ups<br/><img src="docs/screenshots/06-alerts.png" alt="Alerts panel" /></td>
+</tr>
+<tr>
+<td><b>Technician sign-up</b> through the company's invite link<br/><img src="docs/screenshots/07-technician-join.png" alt="Technician joins with invite link" /></td>
+<td><b>Maintenance portal</b> – only that company's jobs, deadlines, lab rating<br/><img src="docs/screenshots/08-technician-portal.png" alt="Technician portal" /></td>
+</tr>
+<tr>
+<td><b>Lab map</b> – seats coloured by status<br/><img src="docs/screenshots/09-lab-map.png" alt="Lab seat map" /></td>
+<td><b>PC history</b> – faults, parts, cost, downtime, “consider replacing”<br/><img src="docs/screenshots/10-pc-history.png" alt="PC repair history" /></td>
+</tr>
+<tr>
+<td><b>QR stickers</b> – printable, one per PC<br/><img src="docs/screenshots/11-qr-stickers.png" alt="QR sticker sheet" /></td>
+<td><b>Planned maintenance</b> – repeating jobs create tickets automatically<br/><img src="docs/screenshots/12-planned-maintenance.png" alt="Planned maintenance" /></td>
+</tr>
+<tr>
+<td><b>Company scorecards</b> – rating, on-time %, reopened, cost<br/><img src="docs/screenshots/13-company-scorecards.png" alt="Maintenance company scorecards" /></td>
+<td><b>Monthly report</b> – print to PDF or download Excel<br/><img src="docs/screenshots/15-monthly-report.png" alt="Monthly report" /></td>
+</tr>
+<tr>
+<td><b>Dark mode</b><br/><img src="docs/screenshots/16-dark-mode.png" alt="Dark mode" /></td>
+<td><b>Bahasa Melayu / 中文 / English</b><br/><img src="docs/screenshots/17-settings-malay.png" alt="Settings in Malay" /></td>
+</tr>
+<tr>
+<td><b>Phone layout</b><br/><img src="docs/screenshots/18-mobile-dashboard.png" alt="Dashboard on a phone" width="300" /></td>
+<td><b>Reports</b> – KPIs, animated 2D / 3D chart, breakdowns<br/><img src="docs/screenshots/14-reports-3d.png" alt="Reports with 3D chart" /></td>
+</tr>
+</table>
 
 ## Features
 
-| Who | Can do |
+**Reporting and repair**
+- 🏷️ **QR sticker per PC.** Scan → report form with the PC already chosen. Signed-out users sign in and come straight back. It warns if the PC already has an open ticket.
+- 📷 **Photos** on reports and tickets (resized in the browser, stored in Firestore).
+- 📞 **One-tap company contact** by phone, WhatsApp or email. The message includes the ticket details and the company's portal link. Every contact is logged.
+- 👷 **Maintenance portal.** Technicians join through an invite link and only ever see their company's jobs. They start the repair, chat, add photos and mark it fixed with parts and cost.
+- 💬 **Chat on every ticket** with quick replies. Status changes and calls are listed separately under History.
+- ⏱️ **Fix deadlines (SLA)** by priority, "3h left" / "Overdue 2h" badges, an overdue banner and filter.
+- 🔔 **Alerts**: bell with unread count, in-app toasts and desktop / phone pop-ups, in each reader's own language.
+
+**Lab management**
+- 🗺️ **Lab map**: a seating plan of each lab, coloured working / faulty / under repair.
+- 🖥️ **PC history**: every fault, parts used, cost and downtime. PCs that keep breaking are flagged **Consider replacing**.
+- 🔁 **Planned maintenance**: repeating jobs (dust cleaning, Windows updates…) that create tickets automatically, optionally sent to a company.
+- 🏢 **Company scorecards**: ⭐ rating from staff, on-time %, average fix time, reopened jobs and repair cost.
+- 👥 **Users and roles**: staff, admin, technician, no access. Admins can block, remove and restore users.
+
+**Reports**
+- 📊 KPIs, a reported-vs-resolved chart with an **animated 2D / 3D** view (drag to rotate), and breakdowns by problem type, lab and priority.
+- 🧾 **Monthly report**: print / save as **PDF**, or download a real **Excel (.xlsx)** file with 5 sheets. Plus a CSV export.
+- 🌱 **Demo data** loader: 4 labs, 63 PCs, 3 companies and about 84 tickets, which you can remove again.
+
+**App experience**
+- 💧 "Water glass" design with a branded loading animation.
+- 🌗 **Light / dark / system** colour mode and 🌐 **English, Bahasa Melayu and 中文**, saved per device.
+- 📱 **Installable app (PWA)** with an offline shell. Works on phones, tablets and desktops.
+- 🔐 Email / password and **Google** sign-in, forgot password.
+
+## Tech stack
+
+| Layer | Used |
 |---|---|
-| **Staff / lecturers** | Report a faulty PC (lab → PC → problem type → priority), follow the ticket live, add comments |
-| **Admin (lab in-charge)** | Everything staff can do, plus **📞 Call maintenance company**, change ticket status, manage computers, maintenance companies and user roles |
+| UI | React 19, TypeScript, Tailwind CSS v4, lucide-react icons |
+| Build | Vite 8 (Rolldown), oxlint |
+| Backend | Firebase Authentication, Cloud Firestore (real-time listeners + security rules), Firebase Hosting |
+| Extras | `qrcode` (QR stickers), `fflate` (Excel export), hand-made SVG charts incl. the 3D view, service worker (PWA) |
 
-**Call maintenance company** (on each ticket):
-- **Call**: opens the phone dialer (`tel:`) on mobile or a softphone app.
-- **WhatsApp**: opens WhatsApp with the repair request already written (ticket code, PC, lab, problem, priority).
-- **Email**: queues an email in the `mail` collection. The [Trigger Email from Firestore](https://extensions.dev/extensions/firebase/firestore-send-email) extension sends it. There's also a `mailto:` fallback.
-- Every contact is logged on the ticket timeline, the company is assigned to the ticket, and the status moves to **Vendor Called**.
+## Getting started
 
-**Ticket flow:** `Open → Vendor Called → In Progress → Resolved → Closed`. The PC's status follows along automatically (Faulty → Under Repair → Working).
-
-## Demo data & reports
-
-- **Reports** (sidebar) shows:
-  - Totals: tickets reported, resolution rate, average time to fix, and vendor call-outs.
-  - A reported-vs-resolved trend chart, with a table view.
-  - Breakdowns by problem type and by lab.
-  - Average fix time by priority.
-  - Computers with repeat problems.
-  - Each maintenance company's performance.
-
-  You can filter by 30 days, 90 days, 12 months or all time, and use **Export CSV** to download the tickets.
-- **Load demo data** (admins, on the Reports page) adds 4 labs, 63 PCs, 3 maintenance companies and 84 tickets with full timelines spread over ~6 months. Every demo record is tagged `demo: true`. **Remove demo data** deletes only those records.
-
-## Maintenance company portal
-
-1. An admin opens a ticket and clicks **Call maintenance company**. The WhatsApp/email message automatically includes that company's **portal link** (`/join/<code>?ticket=<id>`).
-2. The technician opens the link and signs up once (email or Google). The account is registered as a **technician of that company**. The security rules only allow this with a valid invite code for that exact company.
-3. Technicians see **only their company's jobs**: PC, lab, problem type, priority, details and timeline. They can **Start repair**, **Mark as fixed** (with a note) and comment. The lab sees every update live.
-4. Admins manage links on **Maintenance Co.**:
-   - Show or copy the link, and see how many technicians joined.
-   - **New link** makes the old link stop working for new sign-ups.
-   - On **Users**, set a technician to **No access** to block them.
-
-## Deleting users
-
-Admins can delete any user except themselves (**Users** → trash icon).
-- Deleting removes the profile and records the account as removed. The rules then block that login from creating a new profile, so the person loses access immediately, even while signed in.
-- Past tickets and comments keep their name.
-- **Removed accounts** lists everyone removed. **Restore** brings them back with their old role (and company, for technicians).
-- The underlying Firebase Auth login is not deleted, because that needs a paid Cloud Function. It has no access to anything. To remove it completely, delete it in Firebase Console → Authentication.
-
-## Settings: colour mode & language
-
-A **Settings** button sits at the bottom-left of every page: in the sidebar on desktop, and as a floating button on phones and on the sign-in/invite pages. It is saved per device.
-
-- **Colour mode:** Light, Dark, or System (follows the device).
-  - Dark mode redefines the colour tokens in [src/index.css](src/index.css) (`html.dark`) instead of adding `dark:` classes everywhere.
-  - Areas that are dark in both modes use the `keep-white` class.
-  - Text on coloured buttons uses `text-on`, which is always white.
-- **Language:** English, Bahasa Melayu, 中文.
-  - UI text is written in English inside `t('…')` (from `useT()`); the English text is the lookup key.
-  - Translations live in [src/lib/i18n/ms.ts](src/lib/i18n/ms.ts) and [src/lib/i18n/zh.ts](src/lib/i18n/zh.ts). Any missing key falls back to English.
-  - Dates use the matching locale.
-  - Ticket history and messages sent to maintenance companies keep the language they were written in.
-
-To add new UI text, wrap it in `t('…')` and add the same key to both dictionary files.
-
-## QR stickers, photos, alerts & fix deadlines
-
-- **QR stickers** – *Computers → QR stickers* prints a sheet of stickers (per lab, small or large).
-  Each QR opens `/r/<pcId>`, which goes straight to the report form with that PC filled in.
-  If the person isn't signed in, they sign in first and are sent back to the form.
-  Each PC card also has a **QR** button (copy link / download PNG).
-- **Photos** – up to 4 photos on a new report, and more later on the ticket page (staff, admins and the
-  assigned technician, e.g. an "after repair" photo). Photos are resized in the browser to small JPEGs and
-  stored in Firestore (`tickets/{id}/photos`), so no paid Storage bucket is needed.
-- **Alerts** – the bell (sidebar / phone header) shows live alerts:
-  admins get new reports and technician updates; the reporter gets "maintenance contacted", status changes,
-  comments and "fixed"; technicians get new jobs and lab comments for their company.
-  New alerts pop up as a toast, and as a desktop notification when turned on (bell or *Settings → Alerts*).
-  Stored in `notifications` with an `audience` of `admins`, `user:<uid>` or `vendor:<vendorId>`.
-  Automatic **email** alerts need Cloud Functions or the Trigger Email extension, which need the Blaze plan.
-- **Fix deadlines (SLA)** – critical 4 h, high 24 h, medium 3 days, low 7 days from the report
-  (`src/lib/sla.ts`). Tickets show "3h left" / "Overdue 2h"; the dashboard has an overdue banner and filter;
-  Reports shows the on-time rate overall and per maintenance company (also in the CSV export).
-
-Deploying this needs the new rules and index: `npm run deploy` (or `firebase deploy --only firestore,hosting`).
-
-## Scorecards, repair cost, planned maintenance, exports, lab map, app, chat
-
-- **Company scorecard** – after a fix, the person who reported it (or an admin) rates the repair 1–5 ★.
-  *Maintenance Co.* cards and *Reports* show jobs, average fix time, on-time %, rating, reopened tickets
-  and repair cost for each company. Technicians see their lab rating in the portal.
-- **Repair cost & PC history** – when marking a job fixed, enter *parts replaced* and *cost (RM)*.
-  Each PC has a history page (`/computers/<id>`): every fault, parts, cost, downtime. PCs with
-  ≥ 3 faults in 6 months or ≥ RM 1,500 in repairs are flagged **Consider replacing** (`src/lib/stats.ts`).
-- **Planned maintenance** – *Planned jobs* (admin): repeating tasks (every N days / weeks / months) for a lab,
-  optionally sent to a company. When due, a ticket is created automatically. With no server on the Spark plan,
-  this runs in the browser whenever an admin has LabFix open (on open and every 10 minutes); a Firestore
-  transaction makes sure it is never created twice.
-- **Monthly report** – *Reports → Monthly report*: a printable report (Print → *Save as PDF*) and a real
-  **Excel (.xlsx)** download with Summary, Tickets, Companies, By lab and By problem type sheets.
-- **Lab map** – *Computers → Lab map*: a seating plan of each lab coloured by status. Seats come from the PC's
-  location, e.g. "Row 2, seat 5". Click a seat for its open ticket, report a fault, or history.
-- **Install as an app (PWA)** – `public/manifest.webmanifest` + `public/sw.js`. *Install app* appears in the
-  sidebar / Settings (Chrome, Edge, Android); on iPhone use Safari → Share → Add to Home Screen. Alerts pop up
-  through the service worker. Push alerts while the app is fully closed would need Cloud Messaging + a server
-  (Blaze plan).
-- **Chat** – each ticket has a chat between the lab and the maintenance company, with quick replies.
-  Messages alert everyone on the ticket; status changes and calls are listed under *History*.
-
-## Local development with emulators
-
-Runs the app against local Firebase Auth and Firestore. Nothing touches your live project.
+**Requirements:** Node.js 20+, a free Firebase project, and Java (only for the local emulators).
 
 ```bash
-npm run emulators         # terminal 1 (needs Java). Emulator UI: http://127.0.0.1:4000
-npm run dev:emulators     # terminal 2. App: http://localhost:5173
+git clone https://github.com/xxmrkaizoo1/BOUNTY-b720a3d.git
+cd BOUNTY-b720a3d
+npm install
+cp .env.example .env      # paste your Firebase web app config
+npm run dev               # http://localhost:5173
 ```
-To make a local user admin, open the Emulator UI → Firestore → `users/<uid>` and set `role` to `admin`.
 
-## Setup
-
-1. **Create a Firebase project** at https://console.firebase.google.com
-   - *Build → Authentication → Sign-in method*: enable **Email/Password**
-   - *Build → Firestore Database*: create a database
-   - *Project settings → Your apps*: add a **Web app** and copy the config
-2. **Configure env**
-   ```bash
-   cp .env.example .env   # then paste your config values
-   npm install
-   npm run dev
-   ```
-3. **Deploy rules & indexes** (required, because the computer list uses a composite index):
+### Firebase setup
+1. Create a project at <https://console.firebase.google.com>.
+2. **Authentication → Sign-in method:** enable **Email/Password** and **Google**.
+3. **Firestore Database:** create a database.
+4. **Project settings → Your apps:** add a **Web app** and copy its config into `.env`.
+5. Deploy the rules and indexes:
    ```bash
    npm i -g firebase-tools
    firebase login
-   firebase use --add          # pick your project
-   firebase deploy --only firestore
+   firebase use --add
+   npm run deploy:rules
    ```
-4. **Make yourself admin.** Sign up in the app (new accounts are `staff`). Then in the Firestore console open `users/<your uid>` and set `role` to `admin`. After that you can promote others from the **Users** page.
-5. In the app as admin:
-   - **Maintenance Co.**: add the company (phone in international format, e.g. `+60123456789`, so WhatsApp works)
-   - **Computers → Bulk add**: register your labs
-6. *(Optional)* Install the **Trigger Email from Firestore** extension with collection `mail` to send emails automatically.
+6. Sign up in the app (new accounts are **staff**). In the Firestore console set `users/<your uid>.role` to `admin`. From then on, manage everyone from **Users**.
+7. As admin, go to **Reports → Load demo data** to try everything, or add your own companies and **Computers → Bulk add** your labs.
 
-## Hosting (Firebase Hosting)
-
-Your live site will be at `https://<project-id>.web.app`. Firebase Auth already allows that domain.
-
-### Option A: deploy from your PC
+### Local development without touching the live project
 ```bash
-npm i -g firebase-tools
-firebase login
-firebase use --add            # choose your project (creates .firebaserc)
-npm run deploy                # build + deploy hosting, rules and indexes
-```
-Other scripts:
-
-| Script | What it does |
-|---|---|
-| `npm run deploy:hosting` | Build and upload the site only |
-| `npm run deploy:rules` | Upload Firestore rules and indexes only |
-| `npm run serve:hosting` | Test the production build locally at http://localhost:5000 |
-
-`npm run build` **stops with an error if `.env` is missing or still has placeholder values**, so you can't deploy a broken site by accident.
-
-### Option B: auto-deploy from GitHub
-[.github/workflows/deploy.yml](.github/workflows/deploy.yml) builds and deploys on every push to `main`. Each pull request gets its own preview URL.
-
-1. Push this repo to GitHub.
-2. Run `firebase init hosting:github` once. It creates the `FIREBASE_SERVICE_ACCOUNT` secret for you. When it asks, **don't overwrite** the existing workflow or `firebase.json`.
-3. In GitHub → *Settings → Secrets and variables → Actions*, add the six `VITE_FIREBASE_*` values from your `.env`.
-
-### What the hosting config does ([firebase.json](firebase.json))
-- **SPA routing:** every URL (e.g. `/tickets/abc`) serves `index.html`, so refreshing a page works.
-- **Caching:** hashed files in `/assets` are cached for one year. `index.html` is never cached, so users get a new deploy straight away.
-- **Security headers:** `X-Frame-Options`, `X-Content-Type-Options` and `Referrer-Policy`.
-- **Bundle:** Firebase and React go in separate files, so most deploys only change the small app file.
-
-### Custom domain
-Firebase Console → Hosting → *Add custom domain* (e.g. `labfix.yourschool.edu`). Then add that domain under **Authentication → Settings → Authorized domains** so sign-in works on it.
-
-## Data model (Firestore)
-
-```
-users/{uid}          name, email, role: 'staff' | 'admin'
-computers/{id}       assetTag, lab, location, specs, status: 'working' | 'faulty' | 'under_repair'
-vendors/{id}         name, contactPerson, phone, whatsapp, email, notes, isDefault
-tickets/{id}         computerId, assetTag, lab, category, title, description, priority,
-                     status, reportedBy{uid,name}, vendorId, vendorName, createdAt, updatedAt, resolvedAt
-tickets/{id}/events  type: 'created' | 'status' | 'call' | 'comment', message, by, at, channel?
-mail/{id}            to, message{subject,text}   ← consumed by Trigger Email extension
+npm run emulators         # terminal 1 – Auth + Firestore emulators, UI at http://127.0.0.1:4000
+npm run dev:emulators     # terminal 2 – the app, connected to the emulators
 ```
 
-Access rules are in [firestore.rules](firestore.rules).
+## Deploying
+
+```bash
+npm run deploy            # build + hosting + Firestore rules and indexes
+npm run deploy:hosting    # site only
+npm run deploy:rules      # rules and indexes only
+```
+
+- `npm run build` stops if `.env` is missing or still has placeholder values.
+- [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) can deploy automatically on every push to `main`, with preview URLs for pull requests. Run `firebase init hosting:github` once and add the `VITE_FIREBASE_*` values as repository secrets.
+- [`firebase.json`](firebase.json) sets up SPA routing, long caching for hashed assets, no caching for `index.html`, `sw.js` and the manifest, and security headers.
+- For a custom domain: Hosting → *Add custom domain*, then add it under Authentication → *Authorized domains*.
 
 ## Project structure
 
 ```
 src/
-  lib/          firebase init, constants (labels/colours), formatting helpers
-  hooks/        useAuth (auth + profile/role), useLiveQuery (real-time Firestore)
-  services/     tickets.ts (create, status, comments, vendor call), admin.ts (PCs, vendors, users)
-  components/   Layout, Modal, Badges, CallVendorDialog
-  pages/        Login, Dashboard, NewTicket, TicketDetail, Computers, Vendors, Users
+  main.tsx, App.tsx        app start, routes and role gates
+  pages/                   Dashboard, NewTicket, TicketDetail, Computers, ComputerHistory, QrStickers,
+                           Maintenance, Vendors, Users, Reports, MonthlyReport, Portal, Join, Login, Settings
+  components/              Layout, Notifications, TicketChat, Photos, LabMap, Chart3D, charts, Rating,
+                           CallVendorDialog, QrCode, Loading, SettingsPanel, Modal, Badge…
+  services/                tickets, notify, photos, schedules, invites, admin, seed (demo data)
+  hooks/                   useAuth (sign-in, profile, role), useLiveQuery (real-time Firestore)
+  lib/                     firebase, settings + i18n (en / ms / zh), sla, stats, xlsx, pwa, qr, format
+public/                    icons, manifest.webmanifest, sw.js
+docs/                      FLOWCHART.md, screenshots/
+firestore.rules            role-based security rules
+firestore.indexes.json     composite indexes
 ```
+
+## Data model
+
+```
+users/{uid}                  name, email, role (staff | admin | technician | disabled), vendorId?, notifSeenAt
+computers/{id}               assetTag, lab, location ("Row 2, seat 5"), specs, status
+vendors/{id}                 name, contactPerson, phone, whatsapp, email, notes, isDefault
+invites/{code}               vendorId, vendorName, active          ← technician sign-up links
+tickets/{id}                 computerId, assetTag, lab, category, title, description, priority, status,
+                             reportedBy, vendorId, createdAt, resolvedAt, repair{parts,cost},
+                             rating{stars,comment}, reopenCount, scheduleId?
+tickets/{id}/events/{id}     created | status | call | comment (chat)
+tickets/{id}/photos/{id}     small JPEG data URL
+schedules/{id}               planned maintenance: lab, every, unit, nextDue, vendorId?, active
+notifications/{id}           audience (admins | user:<uid> | vendor:<id>), kind, ticketId…
+deletedUsers/{uid}           removed accounts
+```
+
+See the diagram in [docs/FLOWCHART.md](docs/FLOWCHART.md#9-data-model).
+
+## Security
+
+- Every rule is enforced on the server in [`firestore.rules`](firestore.rules):
+  - Technicians can only read and update their own company's tickets.
+  - New accounts can only be `staff`, or `technician` with a valid invite for that exact company.
+  - Removed or blocked accounts lose access immediately.
+- Secrets stay out of git: `.env` is ignored. Copy [`.env.example`](.env.example) to create it.
+
+## Free-plan notes
+
+LabFix runs fully on Firebase's free **Spark** plan:
+- Photos are stored in Firestore instead of Storage.
+- Planned maintenance runs in the browser while an admin is online, guarded by a transaction.
+- Alerts are in-app and through the service worker.
+
+Automatic emails (Trigger Email extension) and push alerts while the app is fully closed would need the **Blaze** plan.
