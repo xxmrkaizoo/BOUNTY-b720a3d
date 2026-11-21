@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="LabFix" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#1d5fed" />
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('labfix.settings') || '{}')
+        var d = s.theme === 'dark' || (s.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (d) document.documentElement.classList.add('dark')
+        if (s.lang) document.documentElement.lang = s.lang === 'zh' ? 'zh-CN' : s.lang
+      } catch (e) {}
+      // Remember the browser's "Install app" offer so the app can show its own button.
+      window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault()
+        window.__labfixInstall = e
+        window.dispatchEvent(new Event('labfix-installable'))
+      })
+    </script>
+    <!-- Loading animation (in the page itself, so it shows before any script has loaded) -->
+    <style>
+      .lf-splash { position: fixed; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center; gap: 18px;
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #0b1b33;
+        background: radial-gradient(1200px 600px at 20% 0%, #dbeafe 0%, transparent 60%), radial-gradient(900px 500px at 100% 100%, #cffafe 0%, transparent 55%), #eef5ff; }
+      html.dark .lf-splash { color: #e6eefb; background: radial-gradient(1200px 600px at 20% 0%, #10306b 0%, transparent 60%), radial-gradient(900px 500px at 100% 100%, #083344 0%, transparent 55%), #07122a; }
+      .lf-splash.lf-inline { position: static; inset: auto; z-index: auto; background: none; padding: 40px 0; gap: 12px; }
+      .lf-orb { position: relative; width: 132px; height: 132px; display: grid; place-items: center; }
+      .lf-inline .lf-orb { width: 72px; height: 72px; }
+      .lf-ring { position: absolute; inset: 10px; border-radius: 999px; border: 2px solid rgba(29, 95, 237, 0.35); animation: lf-ripple 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) infinite; }
+      .lf-ring.lf-r2 { animation-delay: 1.2s; }
+      html.dark .lf-ring { border-color: rgba(89, 161, 252, 0.35); }
+      .lf-glass { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 12px 24px rgba(23, 60, 171, 0.25)); animation: lf-bob 3.2s ease-in-out infinite; }
+      .lf-bowl { fill: rgba(147, 197, 253, 0.3); }
+      html.dark .lf-bowl { fill: rgba(255, 255, 255, 0.06); }
+      .lf-rim { fill: none; stroke: rgba(255, 255, 255, 0.95); stroke-width: 3; }
+      html.dark .lf-rim { stroke: rgba(147, 197, 253, 0.45); }
+      .lf-shine { fill: none; stroke: rgba(255, 255, 255, 0.8); stroke-width: 4; stroke-linecap: round; }
+      .lf-level { animation: lf-fill 3.2s ease-in-out infinite alternate; }
+      .lf-wave { animation: lf-wave 2.2s linear infinite; }
+      .lf-wave.lf-back { opacity: 0.45; animation-duration: 3.4s; animation-direction: reverse; }
+      .lf-tool { fill: #ffffff; filter: drop-shadow(0 2px 3px rgba(11, 27, 51, 0.35)); }
+      .lf-dot { fill: #22d3ee; stroke: #fff; stroke-width: 3; }
+      .lf-word { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+      .lf-word b { color: #1d5fed; font-weight: 800; }
+      html.dark .lf-word b { color: #59a1fc; }
+      .lf-bar { width: 168px; height: 4px; border-radius: 999px; overflow: hidden; background: rgba(29, 95, 237, 0.15); }
+      .lf-bar > span { display: block; width: 40%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #22d3ee, #1d5fed); animation: lf-slide 1.3s ease-in-out infinite; }
+      .lf-text { font-size: 13px; font-weight: 500; opacity: 0.65; }
+      .lf-inline .lf-text { opacity: 0.7; }
+      @keyframes lf-ripple { from { transform: scale(0.85); opacity: 0.9; } to { transform: scale(1.45); opacity: 0; } }
+      @keyframes lf-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+      @keyframes lf-fill { from { transform: translateY(26px); } to { transform: translateY(-14px); } }
+      @keyframes lf-wave { from { transform: translateX(0); } to { transform: translateX(-60px); } }
+      @keyframes lf-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(260%); } }
+      @keyframes lf-out { to { opacity: 0; visibility: hidden; } }
+      @media (prefers-reduced-motion: reduce) {
+        .lf-ring, .lf-glass, .lf-level, .lf-wave, .lf-bar > span { animation: none; }
+        .lf-ring { display: none; }
+        .lf-level { transform: translateY(0); }
+      }
+    </style>
+    <title>LabFix – Lab Maintenance</title>
+  </head>
+  <body>
+    <div id="root">
+      <div class="lf-splash" role="status" aria-live="polite">
+        <div class="lf-orb" aria-hidden="true">
+          <span class="lf-ring"></span><span class="lf-ring lf-r2"></span>
+          <svg class="lf-glass" viewBox="0 0 120 120">
+            <defs>
+              <clipPath id="lf-clip-boot"><circle cx="60" cy="60" r="50" /></clipPath>
+              <linearGradient id="lf-water-boot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#59a1fc" /><stop offset="1" stop-color="#1549d4" /></linearGradient>
+            </defs>
+            <circle class="lf-bowl" cx="60" cy="60" r="50" />
+            <g clip-path="url(#lf-clip-boot)">
+              <g class="lf-level">
+                <path class="lf-wave lf-back" fill="#59a1fc" d="M0 62q15-8 30 0t30 0 30 0 30 0 30 0 30 0V140H0z" />
+                <path class="lf-wave" fill="url(#lf-water-boot)" d="M0 66q15 8 30 0t30 0 30 0 30 0 30 0 30 0V140H0z" />
+              </g>
+            </g>
+            <circle class="lf-rim" cx="60" cy="60" r="50" />
+            <path class="lf-shine" d="M30 42a36 36 0 0 1 16-16" />
+            <g transform="translate(26 26) scale(1.06)">
+              <path class="lf-tool" d="M38.5 17.5a9 9 0 0 0-11.7 11.4L16 39.7a3.5 3.5 0 0 0 5 5l10.8-10.8a9 9 0 0 0 11.4-11.7l-5.6 5.6-4.2-1.2-1.2-4.2z" />
+              <circle class="lf-dot" cx="46" cy="44" r="6" />
+            </g>
+          </svg>
+        </div>
+        <div class="lf-word">Lab<b>Fix</b></div>
+        <div class="lf-bar"><span></span></div>
+        <div class="lf-text" id="lf-boot-text">Loading…</div>
+      </div>
+      <script>
+        // Same language as the app (set in Settings).
+        try {
+          var l = (JSON.parse(localStorage.getItem('labfix.settings') || '{}').lang) || ''
+          var m = { ms: 'Memuatkan…', zh: '加载中…' }
+          if (m[l]) document.getElementById('lf-boot-text').textContent = m[l]
+        } catch (e) {}
+      </script>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

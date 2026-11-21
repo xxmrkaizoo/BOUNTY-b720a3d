@@ -1,0 +1,172 @@
+rules_version = '2';
+
+// LabFix security rules
+//  - staff:      report faults, comment, read lab data
+//  - admin:      everything (call vendors, statuses, PCs, vendors, users, demo data)
+//  - technician: maintenance-company staff who joined through an invite link.
+//                They only see and work on tickets assigned to THEIR company.
+//  - disabled:   no access
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function userPath() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    function hasProfile() { return signedIn() && exists(userPath()); }
+    function me() { return get(userPath()).data; }
+    function isAdmin() { return hasProfile() && me().role == 'admin'; }
+    function isInternal() { return hasProfile() && me().role in ['staff', 'admin']; }
+    function isTech() { return hasProfile() && me().role == 'technician'; }
+    function myVendor() { return me().vendorId; }
+    function changesOnly(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function invitePath(code) { return /databases/$(database)/documents/invites/$(code); }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+      // New users are "staff", or "technician" ONLY with a valid invite code
+      // for exactly the company they claim. Removed accounts can never re-create
+      // a profile; only an admin can restore them.
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == uid
+                    && !exists(/databases/$(database)/documents/deletedUsers/$(uid)) && (
+        (request.resource.data.role == 'staff' && !('vendorId' in request.resource.data))
+        || (request.resource.data.role == 'technician'
+            && request.resource.data.inviteCode is string
+            && exists(invitePath(request.resource.data.inviteCode))
+            && get(invitePath(request.resource.data.inviteCode)).data.active == true
+            && get(invitePath(request.resource.data.inviteCode)).data.vendorId == request.resource.data.vendorId)
+      ));
+      allow update: if isAdmin()
+                    || (request.auth.uid == uid && changesOnly(['name', 'notifSeenAt']));
+      allow delete: if isAdmin() && request.auth.uid != uid;
+    }
+
+    // Removed accounts (tombstones). The user may check their own; admins manage them.
+    match /deletedUsers/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, delete: if isAdmin() && request.auth.uid != uid;
+    }
+
+    // Invite links: the document ID is the secret code. Anyone holding the
+    // link can read that one invite; only admins can list or change them.
+    match /invites/{code} {
+      allow get: if true;
+      allow list, create, update, delete: if isAdmin();
+    }
+    match /vendorSecrets/{vendorId} {
+      allow read, write: if isAdmin();
+    }
+
+    match /computers/{id} {
+      allow read: if isInternal();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin()
+                    // staff flag a PC as faulty when reporting
+                    || (isInternal() && changesOnly(['status', 'updatedAt'])
+                        && request.resource.data.status == 'faulty')
+                    // technicians mark it under repair / working again
+                    || (isTech() && changesOnly(['status', 'updatedAt'])
+                        && request.resource.data.status in ['under_repair', 'working']);
+    }
+
+    match /vendors/{id} {
+      allow read: if isInternal() || (isTech() && myVendor() == id);
+      allow write: if isAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isInternal()
+                  || (isTech() && resource.data.vendorId == myVendor());
+      // Admins may create any ticket (used by the demo-data seeder).
+      allow create: if isAdmin() || (isInternal()
+                    && request.resource.data.reportedBy.uid == request.auth.uid
+                    && request.resource.data.status == 'open'
+                    && request.resource.data.vendorId == null
+                    && request.resource.data.title is string
+                    && request.resource.data.title.size() > 0
+                    && request.resource.data.title.size() <= 200);
+      function validRepair() {
+        return !('repair' in request.resource.data) || request.resource.data.repair == null
+          || (request.resource.data.repair.parts is string
+              && request.resource.data.repair.parts.size() <= 300
+              && request.resource.data.repair.cost is number
+              && request.resource.data.repair.cost >= 0
+              && request.resource.data.repair.cost < 1000000);
+      }
+      allow update: if (isAdmin() && validRepair())
+                    // technicians start / finish their company's jobs and record parts & cost
+                    || (isTech() && resource.data.vendorId == myVendor()
+                        && changesOnly(['status', 'updatedAt', 'resolvedAt', 'repair'])
+                        && request.resource.data.status in ['in_progress', 'resolved']
+                        && validRepair())
+                    // the person who reported it rates the finished repair
+                    || (isInternal() && resource.data.reportedBy.uid == request.auth.uid
+                        && resource.data.status in ['resolved', 'closed']
+                        && changesOnly(['rating'])
+                        && request.resource.data.rating.by.uid == request.auth.uid
+                        && request.resource.data.rating.stars is int
+                        && request.resource.data.rating.stars >= 1
+                        && request.resource.data.rating.stars <= 5
+                        && request.resource.data.rating.comment is string
+                        && request.resource.data.rating.comment.size() <= 500);
+      allow delete: if isAdmin();
+
+      function techOwnsTicket() {
+        return isTech()
+          && get(/databases/$(database)/documents/tickets/$(ticketId)).data.vendorId == myVendor();
+      }
+
+      match /events/{eventId} {
+        allow read: if isInternal() || techOwnsTicket();
+        allow create: if signedIn()
+                      && request.resource.data.by.uid == request.auth.uid
+                      && (isAdmin()
+                          || (isInternal() && request.resource.data.type in ['created', 'comment'])
+                          || (techOwnsTicket() && request.resource.data.type in ['status', 'comment']));
+        allow delete: if isAdmin();
+      }
+
+      // Photos are small JPEGs stored as data: URLs (no paid Storage bucket needed).
+      match /photos/{photoId} {
+        allow read: if isInternal() || techOwnsTicket();
+        allow create: if (isInternal() || techOwnsTicket())
+                      && request.resource.data.by.uid == request.auth.uid
+                      && request.resource.data.dataUrl is string
+                      && request.resource.data.dataUrl.size() < 900000
+                      && request.resource.data.keys().hasOnly(['dataUrl', 'width', 'height', 'by', 'at', 'demo']);
+        allow delete: if isAdmin() || (signedIn() && resource.data.by.uid == request.auth.uid);
+      }
+    }
+
+    // Planned maintenance (run by the app while an admin is online).
+    match /schedules/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // In-app alerts. audience = "admins" | "user:<uid>" | "vendor:<vendorId>".
+    match /notifications/{id} {
+      function canSee(a) {
+        return a == 'user:' + request.auth.uid
+          || (a == 'admins' && isAdmin())
+          || (isTech() && a == 'vendor:' + myVendor());
+      }
+      allow read: if signedIn() && canSee(resource.data.audience);
+      allow create: if (isInternal() || isTech())
+                    && request.resource.data.by.uid == request.auth.uid
+                    && request.resource.data.audience is string
+                    && (request.resource.data.audience == 'admins'
+                        || request.resource.data.audience.matches('user:[A-Za-z0-9]+')
+                        || (isInternal() && request.resource.data.audience.matches('vendor:[A-Za-z0-9_-]+')))
+                    && request.resource.data.ticketTitle is string
+                    && request.resource.data.ticketTitle.size() <= 200
+                    && (!('text' in request.resource.data) || request.resource.data.text.size() <= 300);
+      allow delete: if isAdmin();
+    }
+
+    // Outgoing email queue for the "Trigger Email from Firestore" extension.
+    match /mail/{id} {
+      allow create: if isAdmin();
+    }
+  }
+}
