@@ -48,7 +48,11 @@ LabFix connects three groups of people around one broken computer:
 
 ## Demo accounts
 
-Try the live demo at **https://labfix-a16fa.web.app**. Every account uses the same password:
+### 🌐 Live website: [https://labfix-a16fa.web.app](https://labfix-a16fa.web.app)
+
+[![Open LabFix](https://img.shields.io/badge/Open_LabFix-Sign_in-1d5fed?style=for-the-badge)](https://labfix-a16fa.web.app/login)
+
+Every account uses the same password:
 
 ```
 LabFix-UkHzWLWw
