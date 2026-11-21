@@ -24,6 +24,7 @@
 ## Contents
 
 - [What it does](#what-it-does)
+- [Demo accounts](#demo-accounts)
 - [System flowchart](#system-flowchart)
 - [Screenshots](#screenshots)
 - [Features](#features)
@@ -44,6 +45,33 @@ LabFix connects three groups of people around one broken computer:
 | 👩‍🏫 **Lab staff** | Scan the QR sticker on a PC (or pick it from a list), describe the fault, add a photo, chat about the repair and rate it when it's fixed. |
 | 🛠️ **Lab admin** | Sees every fault live, calls the maintenance company (phone, WhatsApp or email with everything filled in), tracks deadlines, plans routine maintenance, manages PCs, companies and users, and runs reports. |
 | 👷 **Technician** | Joins through the company's invite link, sees **only their company's jobs**, chats with the lab, uploads photos and marks jobs fixed with parts and cost. |
+
+## Demo accounts
+
+Try the live demo at **https://labfix-a16fa.web.app**. Every account uses the same password:
+
+```
+LabFix-UkHzWLWw
+```
+
+| Email | Role | What you'll see |
+|---|---|---|
+| `admin@labfix.demo` | Admin | Main admin, full access |
+| `manager@labfix.demo` | Admin | Second admin (Manager) |
+| `nurul.aina@labfix.demo` | Staff | Report faults, chat, rate repairs |
+| `daniel.lee@labfix.demo` | Staff | |
+| `siti.hajar@labfix.demo` | Staff | |
+| `arjun.kumar@labfix.demo` | Staff | |
+| `marcus.tan@labfix.demo` | Staff | |
+| `hafiz.techcare@labfix.demo` | Technician | TechCare Solutions jobs only |
+| `aiman.techcare@labfix.demo` | Technician | TechCare Solutions jobs only |
+| `wong.pcfix@labfix.demo` | Technician | PCFix Pro Services jobs only |
+| `ravi.netlink@labfix.demo` | Technician | NetLink IT Support jobs only |
+| `farah.izzati@labfix.demo` | Blocked | The "Access removed" page |
+| `former.staff@labfix.demo` | Removed | The "Account removed" page |
+
+> [!NOTE]
+> This is a shared demo, so other visitors may change the data. `@labfix.demo` addresses can't receive email, so password reset won't work for them.
 
 ## System flowchart
 
