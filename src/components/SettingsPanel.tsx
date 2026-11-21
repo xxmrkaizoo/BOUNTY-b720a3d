@@ -54,7 +54,7 @@ export default function SettingsPanel() {
       <section>
         <h2 className="flex items-center gap-2 font-bold text-ink-900"><Palette className="size-4 text-brand-600" /> {t('Colour mode')}</h2>
         <p className="mb-4 text-sm text-slate-500">{t('Changes the look of every page on this device.')}</p>
-        <div role="radiogroup" aria-label={t('Colour mode')} className="grid gap-3 sm:grid-cols-3">
+        <div role="radiogroup" aria-label={t('Colour mode')} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {THEMES.map(({ id, label, hint, icon: Icon }) => (
             <Option key={id} selected={theme === id} onClick={() => setTheme(id)}>
               {id === 'system' ? (
@@ -72,7 +72,7 @@ export default function SettingsPanel() {
       <section>
         <h2 className="flex items-center gap-2 font-bold text-ink-900"><Languages className="size-4 text-brand-600" /> {t('Language')}</h2>
         <p className="mb-4 text-sm text-slate-500">{t('Menus, buttons and labels on every page.')}</p>
-        <div role="radiogroup" aria-label={t('Language')} className="grid gap-3 sm:grid-cols-3">
+        <div role="radiogroup" aria-label={t('Language')} className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {LANGUAGES.map((l) => (
             <Option key={l.id} selected={lang === l.id} onClick={() => setLang(l.id)}>
               <div className="text-2xl font-extrabold text-ink-900">{l.id === 'en' ? 'Aa' : l.id === 'ms' ? 'Ms' : '文'}</div>

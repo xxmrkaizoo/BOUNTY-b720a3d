@@ -32,6 +32,7 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
 
 function Table({ head, rows, right = [] }: { head: string[]; rows: ReactNode[][]; right?: number[] }) {
   return (
+    <div className="overflow-x-auto print:overflow-visible">
     <table className="w-full border-collapse text-[12px]">
       <thead>
         <tr className="bg-[#eef3fa] text-left text-[#33455f]">
@@ -49,6 +50,7 @@ function Table({ head, rows, right = [] }: { head: string[]; rows: ReactNode[][]
         )}
       </tbody>
     </table>
+    </div>
   )
 }
 
@@ -218,7 +220,7 @@ export default function MonthlyReport() {
               <Kpi label={t('Repair cost')} value={fmtMoney(r.cost)} sub={r.rating === null ? undefined : t('Rating {r} / 5 ({n})', { r: r.rating.toFixed(1), n: r.ratings })} />
             </div>
 
-            <div className="grid gap-x-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
               <div>
                 <H2>{t('Problems by type')}</H2>
                 <Table head={[t('Problem type'), t('Tickets')]} right={[1]} rows={r.byType.map(([k, list]) => [t(CATEGORY_SHORT[k as keyof typeof CATEGORY_SHORT]), list.length])} />

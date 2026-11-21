@@ -258,12 +258,12 @@ export default function Reports() {
       {msg && <p className="glass rounded-2xl p-3 text-sm text-slate-700">{msg}</p>}
 
       {/* Filter row */}
-      <div className="glass inline-flex rounded-2xl p-1">
+      <div className="glass grid w-full grid-cols-4 rounded-2xl p-1 sm:inline-flex sm:w-auto">
         {RANGES.map((x) => (
           <button
             key={x.id}
             onClick={() => setRange(x.id)}
-            className={`rounded-xl px-3.5 py-1.5 text-sm font-semibold transition ${
+            className={`rounded-xl px-1.5 py-1.5 text-xs font-semibold whitespace-nowrap transition sm:px-3.5 sm:text-sm ${
               range === x.id ? 'bg-brand-600 text-on shadow-md shadow-brand-600/30' : 'text-slate-600 hover:bg-white/70'
             }`}
           >
@@ -368,7 +368,7 @@ export default function Reports() {
             )}
           </Panel>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <Panel title={tr('Problems by type')} subtitle={tr('Number of tickets')}>
               <BarList items={r.byCategory} />
             </Panel>

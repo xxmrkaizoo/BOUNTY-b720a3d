@@ -156,7 +156,7 @@ export default function NewTicket() {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className="label" htmlFor="cat">{t('Problem type')}</label>
             <select id="cat" className="input" value={category} onChange={(e) => setCategory(e.target.value as IssueCategory)}>

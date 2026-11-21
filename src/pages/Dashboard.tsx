@@ -25,8 +25,8 @@ const PRIORITY_BAR: Record<Priority, string> = {
 function Stat({ label, value, icon: Icon, tone, hint }: { label: string; value: number; icon: LucideIcon; tone: string; hint: string }) {
   return (
     <div className="card group relative overflow-hidden p-4 transition hover:shadow-lift sm:p-5">
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="flex flex-col-reverse items-start gap-2 sm:flex-row sm:justify-between">
+        <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">{label}</div>
           <div className="mt-1 text-2xl font-extrabold sm:mt-2 sm:text-3xl tracking-tight text-slate-900">{value}</div>
         </div>
@@ -105,14 +105,15 @@ export default function Dashboard() {
       {stats.overdue > 0 && filter !== 'overdue' && (
         <button
           onClick={() => setFilter('overdue')}
-          className="flex w-full items-center gap-3 rounded-2xl bg-rose-50 p-4 text-left text-sm text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100"
+          className="flex w-full items-start gap-3 rounded-2xl bg-rose-50 p-4 text-left text-sm text-rose-700 ring-1 ring-rose-200 transition hover:bg-rose-100 sm:items-center"
         >
           <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-rose-100 text-rose-600"><AlarmClock className="size-5" /></span>
-          <span className="flex-1">
+          <span className="min-w-0 flex-1">
             <span className="block font-semibold">{tr('{n} tickets are past their fix deadline', { n: stats.overdue })}</span>
             <span className="text-xs">{tr('Chase the maintenance company or update the status.')}</span>
+            <span className="mt-1.5 block text-xs font-semibold sm:hidden">{tr('Show them')} →</span>
           </span>
-          <span className="text-xs font-semibold whitespace-nowrap">{tr('Show them')} →</span>
+          <span className="hidden text-xs font-semibold whitespace-nowrap sm:inline">{tr('Show them')} →</span>
         </button>
       )}
 
@@ -157,7 +158,7 @@ export default function Dashboard() {
           <ul className="divide-y divide-brand-900/[0.06]">
             {visible.map((t) => (
               <li key={t.id}>
-                <Link to={`/tickets/${t.id}`} className="group flex items-center gap-4 px-4 py-4 transition hover:bg-white/50 sm:px-5">
+                <Link to={`/tickets/${t.id}`} className="group flex items-center gap-3 px-4 py-4 transition hover:bg-white/50 sm:gap-4 sm:px-5">
                   <span className={`h-10 w-1 shrink-0 rounded-full ${PRIORITY_BAR[t.priority]}`} title={tr(PRIORITY_LABEL_EN[t.priority])} />
                   <div className="hidden size-10 shrink-0 place-items-center rounded-xl bg-white/70 text-brand-600 sm:grid">
                     <Monitor className="size-5" />
@@ -171,10 +172,14 @@ export default function Dashboard() {
                       <span className="font-medium text-slate-600">{tr(t.assetTag)}</span> · {t.lab} · {t.reportedBy?.name} · {timeAgo(t.createdAt)}
                       {t.vendorName && <> · <Wrench className="inline size-3" /> {t.vendorName}</>}
                     </div>
+                    <div className="mt-1.5 flex flex-wrap gap-1.5 sm:hidden">
+                      <StatusBadge status={t.status} />
+                      <SlaBadge ticket={t} now={now} hideOk />
+                    </div>
                   </div>
                   <div className="hidden lg:block"><SlaBadge ticket={t} now={now} hideOk /></div>
                   <div className="hidden md:block"><PriorityBadge priority={t.priority} /></div>
-                  <StatusBadge status={t.status} />
+                  <div className="hidden sm:block"><StatusBadge status={t.status} /></div>
                   <ChevronRight className="hidden size-4 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-slate-500 sm:block" />
                 </Link>
               </li>

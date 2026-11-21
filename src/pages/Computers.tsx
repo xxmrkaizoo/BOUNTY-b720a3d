@@ -135,8 +135,8 @@ export default function Computers() {
 
       {byLab.map(([lab, list]) => (
         <section key={lab} className="space-y-3">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-slate-900">{lab}</h2>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <h2 className="w-full text-lg font-bold text-slate-900 sm:w-auto">{lab}</h2>
             <span className="rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-slate-600">{t('{n} PCs', { n: list.length })}</span>
             {list.some((c) => c.status !== 'working') && (
               <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-600 ring-1 ring-rose-200">
@@ -152,7 +152,7 @@ export default function Computers() {
           {view === 'map' ? (
             <LabMap lab={lab} computers={list} openTicketOf={openTicketOf} />
           ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {list.map((c) => (
               <div key={c.id} className="card flex flex-col gap-2 p-4 transition hover:-translate-y-0.5 hover:shadow-lift">
                 <div className="flex items-start gap-2.5">
@@ -179,7 +179,7 @@ export default function Computers() {
                     )}
                   </div>
                 )}
-                <div className="mt-auto flex flex-wrap gap-x-3 gap-y-1 border-t border-brand-900/[0.06] pt-3 text-xs font-semibold">
+                <div className="mt-auto flex flex-wrap gap-x-3.5 gap-y-2 border-t border-brand-900/[0.06] pt-3 text-xs font-semibold *:py-0.5">
                   <Link to={`/tickets/new?computer=${c.id}`} className="text-rose-600 hover:underline">{t('Report fault')}</Link>
                   <Link to={`/computers/${c.id}`} className="text-slate-600 hover:underline">{t('History')}</Link>
                   <button className="inline-flex items-center gap-1 text-brand-600 hover:underline" onClick={() => setQrFor(c)}>
@@ -210,7 +210,7 @@ export default function Computers() {
       <Modal open={!!editing} title={editing?.id ? t('Edit computer') : t('Add computer')} onClose={() => setEditing(null)}>
         {editing && (
           <form onSubmit={onSave} className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="label" htmlFor="tag">{t('Asset tag / PC name')}</label>
                 <input id="tag" className="input" required placeholder={t('LAB1-PC05')} value={editing.form.assetTag} onChange={(e) => set({ assetTag: e.target.value })} />
